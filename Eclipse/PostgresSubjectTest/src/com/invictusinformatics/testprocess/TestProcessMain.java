@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.invictusinformatics.dataobjects.Animal;
+import com.invictusinformatics.dataobjects.Ethnicity;
 import com.invictusinformatics.dataobjects.Parent;
 import com.invictusinformatics.util.AbstractProcessor;
 
@@ -23,8 +24,9 @@ public class TestProcessMain extends AbstractProcessor
 	{
 		Connection  conn = createDBConnection("postgres", "admin", "localpostgres");
 		
-		String userName = "USYAK";
-		try {
+		String userName = "USYAK";  // "ISGC"; //"USMARC";//  "USYAK";  // source rather than userName? or both?
+		try 
+		{
 			HashMap<Long, Animal> animalsMap = loadAnimals(conn, userName);
 			Long[] subjectIds = animalsMap.keySet().toArray(new Long[0]);
 			for (int i = 0; i < subjectIds.length; i++)
@@ -36,34 +38,204 @@ public class TestProcessMain extends AbstractProcessor
 				}
 				
 				fillAnimalData(conn, animal);
-				
 			}
+			
+			StringBuffer animalsJsonBuf = new StringBuffer();
+			animalsJsonBuf.append("{\"animals\": [");
+			
+			for (int i = 0; i < 3 /*subjectIds.length*/; i++)
+			{
+				Animal animal = animalsMap.get(subjectIds[i]);
+				StringBuffer animalSB = getAnimalJsonString(animal);
+				if (i > 0)
+				{
+					animalsJsonBuf.append(",\n");
+				}
+				animalsJsonBuf.append(animalSB);
+				//System.out.println(animalStr);
+			}
+			animalsJsonBuf.append("]}");
+			System.out.println(animalsJsonBuf.toString());
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
+	}
+
+	public static StringBuffer getAnimalJsonString(Animal animal) 
+	{
+		StringBuffer buf = new StringBuffer();
+		buf.append("{\"animalName\": \"");
+		buf.append(animal.getSubjectName());
+		buf.append("\", \"species\": \""); // ,\n or \t or space? 
+		buf.append(animal.getSpeciesName());
+		buf.append('"');
+		
+		if (animal.getBreedAssociations() != null && !animal.getBreedAssociations().isEmpty())
+		{
+			buf.append(", \"associations\": ["); // ,\n
+			for (int i = 0; i < animal.getBreedAssociations().size(); i++)
+			{
+				if (i > 0)
+				{
+					buf.append(", ");
+				}
+				buf.append('"');
+				buf.append(animal.getBreedAssociations().get(i));
+				buf.append('"');
+			}
+			buf.append(']');
+		}
+		
+		if (animal.getOwners() != null && !animal.getOwners().isEmpty())
+		{
+			buf.append(", \"owners\": ["); // ,\n
+			for (int i = 0; i < animal.getOwners().size(); i++)
+			{
+				if (i > 0)
+				{
+					buf.append(", ");
+				}
+				buf.append('"');
+				buf.append(animal.getOwners().get(i));
+				buf.append('"');
+			}
+			buf.append(']');
+		}
+		
+		if (animal.getSire() != null)
+		{
+			buf.append(", \"sire\": \"");
+			buf.append(animal.getSire().getSubjectName());
+			buf.append('"');
+			buf.append(", \"sireConf\": ");
+			buf.append(animal.getSire().isVerified());
+			//buf.append('"');
+		}
+
+		
+		if (animal.getDam() != null)
+		{
+			buf.append(", \"dam\": \"");
+			buf.append(animal.getDam().getSubjectName());
+			buf.append('"');
+			buf.append(", \"damConf\": ");
+			buf.append(animal.getDam().isVerified());
+			//buf.append('"');
+		}
+		
+		if (animal.getProgeny() != null && !animal.getProgeny().isEmpty())
+		{
+			buf.append(", \"progeny\": ["); // ,\n
+			for (int i = 0; i < animal.getProgeny().size(); i++)
+			{
+				if (i > 0)
+				{
+					buf.append(", ");
+				}
+				buf.append('"');
+				buf.append(animal.getProgeny().get(i).getSubjectName());
+				buf.append('"');
+			}
+			buf.append(']');
+			
+			buf.append(", \"progenyConf\": ["); // ,\n
+			for (int i = 0; i < animal.getProgeny().size(); i++)
+			{
+				if (i > 0)
+				{
+					buf.append(", ");
+				}
+				//buf.append('"');
+				buf.append(animal.getProgeny().get(i).isVerified());
+				//buf.append('"');
+			}
+			buf.append(']');
+		}
+		
+		if (animal.getTests() != null && !animal.getTests().isEmpty())
+		{
+			buf.append(", \"tests\": ["); // ,\n
+			for (int i = 0; i < animal.getTests().size(); i++)
+			{
+				if (i > 0)
+				{
+					buf.append(", ");
+				}
+				buf.append('"');
+				buf.append(animal.getTests().get(i));
+				buf.append('"');
+			}
+			buf.append(']');
+		}
+		
+		buf.append("}");
+		
+		return buf;
 	}
 
 	private static void fillAnimalData(Connection conn, Animal animal) throws SQLException 
 	{
-		/*Animal animal2 = */ loadAnimalFamily(conn, animal);
-		System.out.print(animal.getSubjectName());
-		if (animal.getSire() != null)
+		/*Animal animal2 = */ 
+		loadAnimalFamily(conn, animal);
+		loadAnimalBreeds(conn, animal);
+		loadAnimalOwners(conn, animal);
+		
+	}
+
+	private static void loadAnimalOwners(Connection conn, Animal animal) 
+	{
+		//FIXME mock data
+		animal.addOwner("Yuri");
+		animal.addOwner("Ted");
+		animal.addBreedAssociation("Invictus");
+	}
+
+	private static Animal loadAnimalBreeds(Connection conn, Animal animal) throws SQLException 
+	{
+		
+		String query = "select \"SUB_ETHNICITY_ID\",  \"ETHNICITY\", \"FRACTION\" \n" 
+        		+ "from cgemm.sub_ethnicity_tab \n" 
+        		+ "where \"SUBJECT_ID\" = ? ";
+           
+        PreparedStatement pStmt = conn.prepareCall(query);
+        ResultSet result = null;
+                    
+        pStmt.setLong(1, animal.getSubjectId());
+            
+        result = pStmt.executeQuery();
+        
+        while (result.next())
+        {
+        	long subEthnicityId = result.getLong("SUB_ETHNICITY_ID"); // not used currently
+        	String ethnicity = result.getString("ETHNICITY");
+        	double fraction = result.getDouble("FRACTION");
+
+        	Ethnicity breed = new Ethnicity(ethnicity, fraction);
+        	animal.addEthnicity(breed);
+        }
+            
+        result.close();
+        pStmt.close();
+        
+        
+	/*	
+		if (animal.getEthnicity() != null && animal.getEthnicity().size() > 0)
 		{
-			System.out.print(" Sire=" + animal.getSire().getSubjectName());
-		}
-		if (animal.getDam() != null)
-		{
-			System.out.print(" Dam=" + animal.getDam().getSubjectName());
-		}
-		if (animal.getProgeny() != null)
-		{
-			for (int i = 0; i < animal.getProgeny().size(); i++)
+			System.out.print(animal.getSubjectName());
+			for (int i = 0; i < animal.getEthnicity().size(); i++)
 			{
-				System.out.print("   \'" + animal.getProgeny().get(i).getSubjectName() + "\'");
+				System.out.print("   \'" + animal.getEthnicity().get(i).getEthnicity() + "\'=" + animal.getEthnicity().get(i).getFraction());
 			}
+			System.out.println();
 		}
-		System.out.println();
+*/
+        
+        return animal; // not used
+
 	}
 
 	public static Animal loadAnimalFamily(Connection conn, Animal animal) throws SQLException 
@@ -137,8 +309,26 @@ order by pv."SUBJECT_ID";
         result.close();
         pStmt.close();
         
-        return animal;
-		
+        /*
+		System.out.print(animal.getSubjectName());
+		if (animal.getSire() != null)
+		{
+			System.out.print(" Sire=" + animal.getSire().getSubjectName());
+		}
+		if (animal.getDam() != null)
+		{
+			System.out.print(" Dam=" + animal.getDam().getSubjectName());
+		}
+		if (animal.getProgeny() != null)
+		{
+			for (int i = 0; i < animal.getProgeny().size(); i++)
+			{
+				System.out.print("   \'" + animal.getProgeny().get(i).getSubjectName() + "\'");
+			}
+		}
+		System.out.println();*/
+        
+        return animal; // not used
 	}
 
 	private static HashMap<Long, Animal> loadAnimals(Connection conn, String userName) throws SQLException 

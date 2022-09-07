@@ -11,7 +11,7 @@ public class Subject
     private String speciesName;
     private String source;
     private String gender;
-    private Ethnicity[] ethnicity = null; // new Ethnicity[0];
+    private ArrayList<Ethnicity> ethnicity = new ArrayList<Ethnicity>();
     private String status;
     private ArrayList<Long> sampleIds = new ArrayList<Long>(); //new long[0];
     private Date dateCreated;
@@ -86,14 +86,23 @@ public class Subject
     	sampleIds.add(samnpleIdIn);
     }
     
-    public void setEthnicity(Ethnicity[] ethnicityIn)
+    public void setEthnicity(ArrayList<Ethnicity> ethnicityIn)
     {
         ethnicity = ethnicityIn;
     }
     
-    public Ethnicity[] getEthnicity()
+    public ArrayList<Ethnicity> getEthnicity()
     {
         return ethnicity;
+    }
+    
+    public void addEthnicity(Ethnicity ethnicityIn)
+    {
+    	if (ethnicity == null)
+    	{
+    		ethnicity = new ArrayList<Ethnicity>();
+    	}
+    	ethnicity.add(ethnicityIn);
     }
     
 /**

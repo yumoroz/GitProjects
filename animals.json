@@ -1,0 +1,58 @@
+{
+	"animalName": "Bully",
+	"species": "Bos Taurus",
+	"breed": "LongHorn",
+	"associations": ["Texas Breeding Assn", "UK"],
+	"currentOwner": "Ted",
+	"owners": ["Ted", "Sean"],
+	"sire": "FatherBull",
+	"sireConf": true,
+	"dam": "MotherCow",
+	"damConf": false,
+	"progeny": ["calf1", "calf2"],
+	"progenyConf": [true, false],
+	"testsRequested": ["Parentage Test", "InBreeding Test"]
+}
+
+
+ 
+and list of animals may contain something like this:
+(sorry, my formatting was lost between the editor and AOL e-mail)
+ 
+{"animals":
+[
+	{
+		"animalName": "Bully",
+		"species": "Bos Taurus",
+		"breed": ["LongHorn"],
+		"associations": ["Texas Breeding Assn", "UK"],
+		"currentOwner": "Ted",
+		"owners": ["Ted", "Sean"],
+		"sire": "FatherBull",
+		"sireConf": true,
+		"dam": "MotherCow",
+		"damConf": false,
+		"progeny": ["calf1", "calf2"],
+		"progenyConf": [true, false],
+		"testsRequested": ["Parentage Test", "InBreeding Test"]
+	}
+	, 
+	{
+		"animalName": "Horsy",
+		"species": "Equus Cabalos",
+		"breed": ["Black", "White"],
+		"associations": ["Texas Breeding Assn", "UK"],
+		"currentOwner": "Yuri",
+		"owners": ["Yuri", "Ted"],
+		"sire": "FatherHorse",
+		"sireConf": true,
+		"dam": "MotherHorse",
+		"damConf": false,
+		"progeny": ["Horsy1", "Horsy2"],
+		"progenyConf": [true, false],
+		"testsRequested": ["Parentage Test", "InBreeding Test"]
+	}
+]
+}
+
+{"animals":[{ "animalName": "Bully", "species": "Bos Taurus","progeny":["calf1", "calf2"], "breed": ["LongHorn"],"associations": ["Texas Breeding Assn", "UK"],"currentOwner": "Ted","owners": ["Ted", "Sean"],"sire": "FatherBull", "sireConf": true,"dam": "MotherCow","damConf": false,"progeny": ["calf1", "calf2"],"progenyConf": [true, false],"testsRequested": ["Parentage Test", "InBreeding Test"]}, {"animalName": "Horsy","species": "Equus Cabalos",	"progeny": ["Horsy1", "Horsy2"],"breed": ["Black", "White"],"associations": ["Texas Breeding Assn", "UK"],"currentOwner": "Yuri","owners": ["Yuri", "Ted"],"sire": "FatherHorse","sireConf": true,"dam": "MotherHorse","damConf": false,"progeny": ["Horsy1", "Horsy2"],"progenyConf": [true, false],"testsRequested": ["Parentage Test", "InBreeding Test"]}]}
